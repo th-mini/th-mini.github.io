@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friend Referral System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Friend Referral System</h1>
+<p>Use this link to invite friends: <span id="inviteLink"></span></p>
+<p><strong>Referral Count:</strong> <span id="clickCount">0</span></p>
+
+<h2>Who Referred</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Friend's Name</th>
+            <th>Referral Date</th>
+            <th>Referred By</th>
+        </tr>
+    </thead>
+    <tbody id="referralsBody">
+    </tbody>
+</table>
+
+<button id="refreshButton">Update List</button>
+
+<script>
+    const inviteLink = document.getElementById('inviteLink');
+    const clickCount = document.getElementById('clickCount');
+    const referralsBody = document.getElementById('referralsBody');
+    const refreshButton = document.getElementById('refreshButton');
+
+    const friendName = prompt("Enter your name (or nickname)", "Friends");
+    const referralKey = 'referrals';
+    const clickCountKey = 'clickCount';
+
+    // Generate unique link
+    const currentUrl = window.location.href;
+    const uniqueLink = `${currentUrl}?ref=${encodeURIComponent(friendName)}`;
+    inviteLink.textContent = uniqueLink;
+
+    // Process referral
+    if (window.location.search.includes('ref=')) {
+        const referrer = new URLSearchParams(window.location.search).get('ref');
+        recordReferral(referrer);
+    }
+
+    // Record referral
+    function recordReferral(name) {
+        const referrals = JSON.parse(localStorage.getItem(referralKey)) || [];
+        const date = new Date().toLocaleString();
+        const referredBy = getReferredBy();
+        referrals.push({ name, date, referredBy });
+        localStorage.setItem(referralKey, JSON.stringify(referrals));
+        updateReferralCount();
+        updateReferralList();
+    }
+
+    // Get referred by
+    function getReferredBy() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('ref');
+    }
+
+    // Update referral count
+    function updateReferralCount() {
+        const count = JSON.parse(localStorage.getItem(referralKey))?.length || 0;
+        localStorage.setItem(clickCountKey, count);
+        clickCount.textContent = count;
+    }
+
+    // Update referral list
+    function updateReferralList() {
+        const referrals = JSON.parse(localStorage.getItem(referralKey)) || [];
+        referralsBody.innerHTML = '';
+        referrals.forEach(referral => {
+            const row = `<tr><td>${referral.name}</td><td>${referral.date}</td><td>${referral.referredBy}</td></tr>`;
+            referralsBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    // Update list on button click
+    refreshButton.addEventListener('click', () => {
+        updateReferralList();
+    });
+
+    // Initial data load
+    updateReferralCount();
+    updateReferralList();
+</script>
+
+</body>
+</html>

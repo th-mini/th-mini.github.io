@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система приглашений друзей</title>
+    <title>Friend Referral System</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,23 +29,24 @@
 </head>
 <body>
 
-<h1>Система приглашений друзей</h1>
-<p>Используйте эту ссылку для приглашения друзей: <span id="inviteLink"></span></p>
-<p><strong>Количество переходов:</strong> <span id="clickCount">0</span></p>
+<h1>Friend Referral System</h1>
+<p>Use this link to invite friends: <span id="inviteLink"></span></p>
+<p><strong>Referral Count:</strong> <span id="clickCount">0</span></p>
 
-<h2>Кто перешёл по ссылке</h2>
+<h2>Who Referred</h2>
 <table>
     <thead>
         <tr>
-            <th>Имя друга</th>
-            <th>Дата перехода</th>
+            <th>Friend's Name</th>
+            <th>Referral Date</th>
+            <th>Referred By</th>
         </tr>
     </thead>
     <tbody id="referralsBody">
     </tbody>
 </table>
 
-<button id="refreshButton">Обновить список</button>
+<button id="refreshButton">Update List</button>
 
 <script>
     const inviteLink = document.getElementById('inviteLink');
@@ -53,56 +54,66 @@
     const referralsBody = document.getElementById('referralsBody');
     const refreshButton = document.getElementById('refreshButton');
 
-    const friendName = prompt("Введите ваше имя (или никнейм)", "Друзья");
+    const friendName = prompt("Enter your name (or nickname)", "Friends");
     const referralKey = 'referrals';
     const clickCountKey = 'clickCount';
 
-    // Генерация уникальной ссылки
-    const uniqueLink = `https://example.com/?ref=${encodeURIComponent(friendName)}`;
+    // Generate unique link
+    const currentUrl = window.location.href;
+    const uniqueLink = `${currentUrl}?ref=${encodeURIComponent(friendName)}`;
     inviteLink.textContent = uniqueLink;
 
-    // Обработка перехода по ссылке
+    // Process referral
     if (window.location.search.includes('ref=')) {
         const referrer = new URLSearchParams(window.location.search).get('ref');
         recordReferral(referrer);
     }
 
-    // Запись перехода
+    // Record referral
     function recordReferral(name) {
         const referrals = JSON.parse(localStorage.getItem(referralKey)) || [];
         const date = new Date().toLocaleString();
-        referrals.push({ name, date });
+        const referredBy = getReferredBy();
+        referrals.push({ name, date, referredBy });
         localStorage.setItem(referralKey, JSON.stringify(referrals));
         updateReferralCount();
         updateReferralList();
     }
 
-    // Обновление количества переходов
+    // Get referred by
+    function getReferredBy() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('ref');
+    }
+
+    // Update referral count
     function updateReferralCount() {
         const count = JSON.parse(localStorage.getItem(referralKey))?.length || 0;
         localStorage.setItem(clickCountKey, count);
         clickCount.textContent = count;
     }
 
-    // Обновление списка переходов
+    // Update referral list
     function updateReferralList() {
         const referrals = JSON.parse(localStorage.getItem(referralKey)) || [];
         referralsBody.innerHTML = '';
         referrals.forEach(referral => {
-            const row = `<tr><td>${referral.name}</td><td>${referral.date}</td></tr>`;
+            const row = `<tr><td>${referral.name}</td><td>${referral.date}</td><td>${referral.referredBy}</td></tr>`;
             referralsBody.insertAdjacentHTML('beforeend', row);
         });
     }
 
-    // Обновление списка по кнопке
+    // Update list on button click
     refreshButton.addEventListener('click', () => {
         updateReferralList();
     });
 
-    // Начальная загрузка данных
+    // Initial data load
     updateReferralCount();
     updateReferralList();
 </script>
 
 </body>
 </html>
+
+Find More

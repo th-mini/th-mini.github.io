@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система приглашений друзей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #inviteButton {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Пригласите друзей!</h1>
+    <input type="text" id="link" placeholder="Введите ссылку для приглашения">
+    <button id="inviteButton">Отправить приглашение</button>
+
+    <h2>Статистика переходов</h2>
+    <button id="refreshButton">Обновить список</button>
+    <div id="statistics"></div>
+
+    <script>
+        async function fetchStatistics() {
+            try {
+                const response = await fetch('/api/statistics'); // Замените на ваш API-эндпоинт
+                const data = await response.json();
+                
+                const statisticsDiv = document.getElementById('statistics');
+                statisticsDiv.innerHTML = `
+                    <p>Количество людей, перешедших по ссылке: ${data.count}</p>
+                    <p>Последний переход по ссылке: ${data.lastVisitor}</p>
+                `;
+            } catch (error) {
+                console.error('Ошибка при получении статистики:', error);
+            }
+        }
+
+        document.getElementById('inviteButton').addEventListener('click', async () => {
+            const link = document.getElementById('link').value;
+            // Здесь примените логику для отправки приглашений
+            console.log('Приглашение отправлено по ссылке:', link);
+            await fetchStatistics();
+        });
+
+        document.getElementById('refreshButton').addEventListener('click', fetchStatistics);
+
+        // Инициализация получения статистики при загрузке страницы
+        fetchStatistics();
+    </script>
+</body>
+</html>
